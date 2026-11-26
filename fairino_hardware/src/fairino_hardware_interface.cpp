@@ -1,4 +1,5 @@
 #include "fairino_hardware/fairino_hardware_interface.hpp"
+#include "fairino_hardware/robot_connection.hpp"
 
 namespace fairino_hardware{
 
@@ -7,6 +8,17 @@ hardware_interface::CallbackReturn FairinoHardwareInterface::on_init(const hardw
         return hardware_interface::CallbackReturn::ERROR;
     }
     info_ = sysinfo;//info_是父类中定义的变量
+    const auto robot_ip = info_.hardware_parameters.find("robot_ip");
+    _controller_ip = robot_ip != info_.hardware_parameters.end()
+        ? robot_ip->second
+        : default_robot_ip(CONTROLLER_IP_ADDRESS);
+    if (_controller_ip.empty()) {
+        RCLCPP_ERROR(rclcpp::get_logger("FairinoHardwareInterface"),
+                     "robot_ip must not be empty");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
+    RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"),
+                "Robot ip:%s", _controller_ip.c_str());
     
     for (const hardware_interface::ComponentInfo& joint : info_.joints) {
 

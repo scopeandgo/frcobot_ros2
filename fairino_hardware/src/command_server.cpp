@@ -2,6 +2,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "fairino_hardware/version_control.h"
+#include "fairino_hardware/robot_connection.hpp"
+#include <stdexcept>
 
 std::atomic_bool _reconnect_flag;
 std::atomic<int> mainerrcode;
@@ -205,8 +207,15 @@ robot_command_thread::robot_command_thread(const std::string node_name):rclcpp::
     /*********************************************************************************************/
 
     /********************************尝试使用SDK库连接机械臂******************************************/
-    _controller_ip = CONTROLLER_IP;//控制器默认ip地址
-    RCLCPP_INFO(rclcpp::get_logger(LOGGER_NAME),"Robot ip:%s",CONTROLLER_IP);
+    rcl_interfaces::msg::ParameterDescriptor robot_ip_descriptor;
+    robot_ip_descriptor.description = "Robot controller IP address; restart the node to change it.";
+    robot_ip_descriptor.read_only = true;
+    _controller_ip = this->declare_parameter<std::string>(
+        "robot_ip", fairino_hardware::default_robot_ip(CONTROLLER_IP), robot_ip_descriptor);
+    if (_controller_ip.empty()) {
+        throw std::invalid_argument("robot_ip must not be empty");
+    }
+    RCLCPP_INFO(rclcpp::get_logger(LOGGER_NAME),"Robot ip:%s",_controller_ip.c_str());
 
     //打印输出版本信息及其他前置信息
     RCLCPP_INFO(rclcpp::get_logger(LOGGER_NAME),msgout[msg_id(hello)]);
