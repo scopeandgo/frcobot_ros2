@@ -1,5 +1,28 @@
 # frcobot_ros2
 
+## Linux architecture support (local customization)
+
+This branch includes SDK 2.3.2 for Linux **AArch64/ARM64** and **x86-64**.
+CMake selects the matching library automatically. ARM64 hosts and containers
+can stay native; emulation and manual library replacement are not required.
+Other architectures and non-Linux builds fail with a clear configuration error.
+See [ARM64 SDK provenance](fairino_hardware/libfairino/ARM64_SOURCE.md).
+
+After pulling this update inside the ROS workspace, rebuild the hardware
+package with a fresh CMake configuration (adjust the workspace path if needed):
+
+```bash
+source /opt/ros/jazzy/setup.bash
+cd ~/fairino_ws
+colcon build --packages-up-to fairino_hardware --cmake-clean-cache
+source install/setup.bash
+```
+
+The configure output should say `Fairino SDK 2.3.2: aarch64` on ARM64.
+The selected SDK and SONAME links are installed into the package's `lib`
+directory during installation; source-tree SDK links are not modified.
+Target-container compilation and physical robot testing remain required.
+
 ## Runtime robot connection (local customization)
 
 Build this checkout once, then select each robot's address when starting its
