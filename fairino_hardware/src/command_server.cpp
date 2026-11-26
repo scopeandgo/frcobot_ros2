@@ -10252,7 +10252,9 @@ std::string robot_command_thread::MoveStationary(std::string para){
 void robot_command_thread::_state_recv_callback(){
     auto msg = robot_feedback_msg();
     static ROBOT_STATE_PKG ctrl_state;
-    _ptr_robot->GetRobotRealTimeState(&ctrl_state);
+    if (_ptr_robot->GetRobotRealTimeState(&ctrl_state) != 0) {
+        return;
+    }
 
     msg.prg_state = ctrl_state.program_state;   // 程序运行状态，1-停止；2-运行；3-暂停；
     msg.rbt_state = ctrl_state.robot_state;     // 机器人运动状态，1-停止；2-运行；3-暂停；4-拖动 
